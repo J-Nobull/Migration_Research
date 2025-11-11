@@ -1,0 +1,35 @@
+name: Run Notebook
+
+on: [push, workflow_dispatch]
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Install dependencies
+        run: pip install pandas requests nbconvert
+
+      - name: Run Jupyter notebook
+        env:
+          API_KEY_BEA: ${{ secrets.API_KEY_BEA }}
+          API_KEY_CENSUS: ${{ secrets.API_KEY_CENSUS }}
+          
+        run: |
+          python - <<'PY'
+          import os
+
+          key = {
+            "BEA": os.getenv("API_KEY_BEA"),
+            "CENSUS": os.getenv("API_KEY_CENSUS")
+          }            
+          if not key:
+              raise ValueError("BEA_API_KEY not found in environment.")
+          print("API keys loaded successfully.")
+          # (Add your notebook execution or script code here)
+          PY
