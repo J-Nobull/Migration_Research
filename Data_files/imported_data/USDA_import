@@ -1,4 +1,3 @@
-
 FIPS,POP_2010,RUCC_2013,POP_2020,RUCC_2023,Amenity_score,Amenity_rank,Industry_type,Farming,Mining,Mfging,Govt,Rec,Nonspec,Low_Ed_cnty,Low_emp_cnty,Pop_Loss_2010,Retire_dest_cnty,Persistent_Pov_cnty,Pers_chld_pov_cnty,year
 01001,54571,2.0,58805,2,0.78,4.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0,0.0,0.0,2011
 01003,182265,3.0,231767,3,1.82,4.0,5.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,2011
