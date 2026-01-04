@@ -8,9 +8,9 @@ from datetime import datetime
 load_dotenv()
 
 # API Keys
-API_KEY_BEA = os.getenv('BEA_API_KEY', 'your_key_here')
-API_KEY_CENSUS = os.getenv('CENSUS_API_KEY', 'your_key_here')
-API_KEY_BLS = os.getenv('BLS_API_KEY', 'your_key_here')
+API_KEY_BEA = os.getenv('API_KEY_BEA', 'your_key_here')
+API_KEY_CENSUS = os.getenv('API_KEY_CENSUS', 'your_key_here')
+API_KEY_BLS = os.getenv('API_KEY_BLS', 'your_key_here')
 
 # Validate API keys
 if API_KEY_BEA == 'your_key_here':
