@@ -89,7 +89,7 @@ def run():
     
     save_point(IRS_migration, 'IRS_panel.csv', f"{len(IRS_migration):,} panel-ready observations")
     
-    print(f"\n✅ IRS data processing complete")
+    print(f"\nIRS data processing complete")
     print(f"Panel rows: {len(IRS_migration):,}")
     print(f"Unique counties: {IRS_migration['FIPS'].nunique():,}\n")
 

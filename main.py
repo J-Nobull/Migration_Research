@@ -39,7 +39,7 @@ def run_step_1():
     print("\nRunning USDA data loading...")
     usda.run()
     
-    print("\n✅ Step 1 complete\n")
+    print("\n Step 1 complete\n")
 
 def run_step_2():
     """Step 2: Data Preprocessing"""
@@ -50,7 +50,7 @@ def run_step_2():
     from src.preprocessing import clean_data
     clean_data.run()
     
-    print("\n✅ Step 2 complete\n")
+    print("\n Step 2 complete\n")
 
 def run_step_3():
     """Step 3: Feature Engineering"""
@@ -61,7 +61,7 @@ def run_step_3():
     from src.features import engineer_features
     engineer_features.run()
     
-    print("\n✅ Step 3 complete\n")
+    print("\n Step 3 complete\n")
 
 def run_step_4():
     """Step 4: Statistical Modeling"""
@@ -72,7 +72,7 @@ def run_step_4():
     from src.models import run_models
     run_models.run()
     
-    print("\n✅ Step 4 complete\n")
+    print("\n Step 4 complete\n")
 
 def run_step_5():
     """Step 5: Analysis & Visualization"""
@@ -83,7 +83,7 @@ def run_step_5():
     from src.analysis import create_outputs
     create_outputs.run()
     
-    print("\n✅ Step 5 complete\n")
+    print("\n Step 5 complete\n")
 
 def run_full_pipeline():
     """Run all steps in sequence"""
@@ -98,7 +98,7 @@ def run_full_pipeline():
     run_step_5()
     
     print("\n" + "="*49)
-    print("✅ FULL PIPELINE COMPLETE")
+    print(" FULL PIPELINE COMPLETE")
     print("="*49 + "\n")
 
 if __name__ == '__main__':

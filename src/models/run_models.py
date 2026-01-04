@@ -33,8 +33,10 @@ def model_1_gravity():
     rucc_all['RUC_code'] = pd.to_numeric(rucc_all['RUC_code'], errors='coerce').astype('Int64')
     rucc_all['FIPS'] = rucc_all['FIPS'].astype(str)
     
-    # Merge RUCC codes
+    # Merge RUCC codes - standardize FIPS to string
     bilateral['dest_FIPS'] = bilateral['dest_FIPS'].astype(str).str.zfill(5)
+    bilateral['origin_FIPS'] = bilateral['origin_FIPS'].astype(str).str.zfill(5)
+    
     bilateral = bilateral.merge(
         rucc_all.rename(columns={'FIPS': 'dest_FIPS', 'RUC_code': 'RUC_code_dest'}),
         on=['dest_FIPS', 'Year'], how='left')
@@ -66,7 +68,7 @@ def model_1_gravity():
     
     print(f"R²: {model1.rsquared:.4f}")
     print(f"N: {model1.nobs}")
-    print("✅ Model 1 complete\n")
+    print(" Model 1 complete\n")
     
     return model1
 
@@ -127,7 +129,7 @@ def model_2_panel_fe():
     save_point(comparison, 'MODEL-2_panel_fe_comparison.csv', 'Panel FE specifications')
     
     print(comparison)
-    print("\n✅ Model 2 complete\n")
+    print("\n Model 2 complete\n")
     
     return pooled_model, fe_model, twoway_model
 
@@ -179,7 +181,7 @@ def model_3_did():
     save_point(results, 'MODEL-3_did_comparison.csv', 'DiD specifications')
     
     print(results)
-    print("\n✅ Model 3 complete\n")
+    print("\n Model 3 complete\n")
     
     return model3a, model3b
 
@@ -225,7 +227,7 @@ def model_4_dynamic():
     print(f"Persistence (ρ): {persistence:.4f}")
     print(f"Long-run multiplier: {lr_multiplier:.4f}")
     print(f"R²: {model4.rsquared:.4f}")
-    print("\n✅ Model 4 complete\n")
+    print("\n Model 4 complete\n")
     
     return model4
 
@@ -241,7 +243,7 @@ def run():
     model4 = model_4_dynamic()
     
     print("\n" + "="*49)
-    print("✅ ALL MODELS COMPLETE")
+    print("ALL MODELS COMPLETE")
     print("="*49 + "\n")
 
 if __name__ == '__main__':

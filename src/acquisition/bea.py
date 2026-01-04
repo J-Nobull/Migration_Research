@@ -111,7 +111,7 @@ def run():
         rpp_metro = rpp_metro[['FIPS', 'Year', 'RPP_Metro']].dropna(subset=['FIPS'])
         save_point(rpp_metro, 'BEA_RPP_Metro.csv', f"{len(rpp_metro):,} county-year RPP records")
     
-    print("\n✅ BEA data acquisition complete\n")
+    print("\nBEA data acquisition complete\n")
 
 if __name__ == '__main__':
     run()

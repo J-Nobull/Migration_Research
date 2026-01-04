@@ -16,7 +16,7 @@ def test_required_files_exist():
         print(f"\nExpected location: {RAW_DATA_DIR}")
         return False
     else:
-        print(f"\n✅ All {len(REQUIRED_FILES)} required files found")
+        print(f"\n All {len(REQUIRED_FILES)} required files found")
         return True
 
 def test_api_keys_loaded():
@@ -35,7 +35,7 @@ def test_api_keys_loaded():
         keys_ok = False
     
     if keys_ok:
-        print("✅ All API keys configured")
+        print(" All API keys configured")
     return keys_ok
 
 def run_all_tests():
@@ -48,7 +48,7 @@ def run_all_tests():
     keys_ok = test_api_keys_loaded()
     
     if files_ok and keys_ok:
-        print("\n✅ All tests passed! Ready to run pipeline.")
+        print("\nAll tests passed! Ready to run pipeline.")
         return True
     else:
         print("\n❌ Some tests failed. Fix issues before running pipeline.")

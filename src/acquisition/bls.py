@@ -88,7 +88,7 @@ def run():
     
     save_point(bls_df, 'BLS_import.csv', f"{len(bls_df):,} annual unemployment observations")
     
-    print(f"\n✅ BLS data acquisition complete")
+    print(f"\n BLS data acquisition complete")
     print(f"Unique FIPS: {bls_df['FIPS'].nunique():,}\n")
 
 if __name__ == '__main__':

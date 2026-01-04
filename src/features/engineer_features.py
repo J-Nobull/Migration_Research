@@ -90,7 +90,7 @@ def merge_panel():
     print("\nConstructing county-year analytical panel...")
     
     # Load cleaned data
-    census = pd.read_csv(PROCESSED_DATA_DIR / 'Census_clean.csv')
+    census = pd.read_csv(PROCESSED_DATA_DIR / 'Census_reduced.csv')
     irs = pd.read_csv(PROCESSED_DATA_DIR / 'IRS_panel_clean.csv')
     bls = pd.read_csv(PROCESSED_DATA_DIR / 'BLS_import.csv')
     pci = pd.read_csv(PROCESSED_DATA_DIR / 'BEA_PCI_clean.csv')
@@ -100,6 +100,16 @@ def merge_panel():
     typology = pd.read_csv(PROCESSED_DATA_DIR / 'USDA_Typology.csv')
     amenities = pd.read_csv(PROCESSED_DATA_DIR / 'USDA_Amenities_clean.csv')
     incentives = pd.read_csv(PROCESSED_DATA_DIR / 'Incentives_clean.csv')
+    rpp_metro = pd.read_csv(PROCESSED_DATA_DIR / 'BEA_RPP_Metro.csv')
+    rpp_nonmetro = pd.read_csv(PROCESSED_DATA_DIR / 'BEA_RPP_NONmetro.csv')
+    
+    # Standardize FIPS across all dataframes
+    for df in [census, irs, bls, pci, gdp, rucc_2013, rucc_2023, 
+               typology, amenities, incentives, rpp_metro, rpp_nonmetro]:
+        if 'FIPS' in df.columns:
+            df['FIPS'] = df['FIPS'].astype(str).str.zfill(5)
+        if 'Year' in df.columns:
+            df['Year'] = df['Year'].astype(int)
     
     # Start with Census as base
     panel = census.copy()
@@ -107,7 +117,10 @@ def merge_panel():
     
     # RUCC temporal assignment
     rucc_2013_panel = pd.concat([rucc_2013.assign(Year=y) for y in range(2011, 2020)], ignore_index=True)
+    rucc_2013_panel = rucc_2013_panel.drop_duplicates(['FIPS', 'Year'])
+    
     rucc_2023_panel = pd.concat([rucc_2023.assign(Year=y) for y in range(2020, 2022)], ignore_index=True)
+    rucc_2023_panel = rucc_2023_panel.drop_duplicates(['FIPS', 'Year'])
     
     panel = panel.merge(rucc_2013_panel[['FIPS', 'Year', 'RUCC_2013']], on=['FIPS', 'Year'], how='left')
     panel = panel.merge(rucc_2023_panel[['FIPS', 'Year', 'RUCC_2023']], on=['FIPS', 'Year'], how='left')
@@ -117,7 +130,10 @@ def merge_panel():
     
     # USDA typology and amenities
     typology_panel = pd.concat([typology.assign(Year=y) for y in range(2011, 2022)], ignore_index=True)
+    typology_panel = typology_panel.drop_duplicates(['FIPS', 'Year'])
+    
     amenities_panel = pd.concat([amenities.assign(Year=y) for y in range(2011, 2022)], ignore_index=True)
+    amenities_panel = amenities_panel.drop_duplicates(['FIPS', 'Year'])
     
     panel = panel.merge(typology_panel, on=['FIPS', 'Year'], how='left')
     panel = panel.merge(amenities_panel, on=['FIPS', 'Year'], how='left')
@@ -128,21 +144,24 @@ def merge_panel():
     panel[amenities_cols] = panel[amenities_cols].fillna(0)
     print(f"  + USDA: {len(panel):,} obs")
     
-    # BEA
+    # BEA - drop duplicates before merge
+    pci = pci.drop_duplicates(['FIPS', 'Year'])
+    gdp = gdp.drop_duplicates(['FIPS', 'Year'])
+    
     panel = panel.merge(pci[['FIPS', 'Year', 'BEA_PCI']], on=['FIPS', 'Year'], how='left')
     panel = panel.merge(gdp[['FIPS', 'Year', 'BEA_GDP']], on=['FIPS', 'Year'], how='left')
     panel['BEA_PCI'] = panel['BEA_PCI'].fillna(0)
     panel['BEA_GDP'] = panel['BEA_GDP'].fillna(0)
     
     # RPP (metro and non-metro)
-    rpp_metro = pd.read_csv(PROCESSED_DATA_DIR / 'BEA_RPP_Metro.csv')
-    rpp_nonmetro = pd.read_csv(PROCESSED_DATA_DIR / 'BEA_RPP_NONmetro.csv')
-    
     panel['STATE'] = panel['FIPS'].str[:2]
+    
+    rpp_metro = rpp_metro.drop_duplicates(['FIPS', 'Year'])
     panel = panel.merge(rpp_metro[['FIPS', 'Year', 'RPP_Metro']], on=['FIPS', 'Year'], how='left')
     
     rpp_nonmetro['STATE'] = rpp_nonmetro['State_FIPS'].astype(str).str[:2]
     rpp_nonmetro = rpp_nonmetro[rpp_nonmetro['State_FIPS'].astype(str).str.endswith('999')].copy()
+    rpp_nonmetro = rpp_nonmetro.drop_duplicates(['STATE', 'Year'])
     panel = panel.merge(rpp_nonmetro[['STATE', 'Year', 'RPP_NonMetro']], on=['STATE', 'Year'], how='left')
     
     panel['RPP'] = panel['RPP_Metro'].fillna(panel['RPP_NonMetro'])
@@ -150,17 +169,20 @@ def merge_panel():
     print(f"  + BEA: {len(panel):,} obs")
     
     # BLS
+    bls = bls.drop_duplicates(['FIPS', 'Year'])
     panel = panel.merge(bls[['FIPS', 'Year', 'unemploy_rate']], on=['FIPS', 'Year'], how='left')
     panel['unemploy_rate'] = panel['unemploy_rate'].fillna(0)
     print(f"  + BLS: {len(panel):,} obs")
     
     # IRS Migration
+    irs = irs.drop_duplicates(['FIPS', 'Year'])
     panel = panel.merge(irs, on=['FIPS', 'Year'], how='left')
     migration_cols = [c for c in irs.columns if c not in ['FIPS', 'Year']]
     panel[migration_cols] = panel[migration_cols].fillna(0)
     print(f"  + IRS: {len(panel):,} obs")
     
     # Incentives
+    incentives = incentives.drop_duplicates(['FIPS', 'Year'])
     panel = panel.merge(incentives, on=['FIPS', 'Year'], how='left')
     incentive_cols = [c for c in incentives.columns if c not in ['FIPS', 'Year']]
     panel[incentive_cols] = panel[incentive_cols].fillna(0)
@@ -197,7 +219,7 @@ def run():
     # Save final panel
     save_point(panel, 'full_panel.csv', f"{len(panel):,} county-year observations")
     
-    print("\n✅ Feature engineering complete\n")
+    print("\nFeature engineering complete\n")
 
 if __name__ == '__main__':
     run()

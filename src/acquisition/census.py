@@ -154,7 +154,7 @@ def run():
     from src.utils.helpers import save_point
     save_point(out, 'Census_import.csv', f"{len(out):,} county-year observations")
     
-    print(f"\n✅ Census download complete")
+    print(f"\nCensus download complete")
     print(f"Counties: {out['FIPS'].nunique()}")
     print(f"Years: {out['Year'].min()}-{out['Year'].max()}")
     print(f"Variables: {len([c for c in ACS_VARS.values() if c in out.columns])}\n")

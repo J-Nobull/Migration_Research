@@ -26,7 +26,7 @@ def clean_usda_data():
     save_point(amenities, 'USDA_Amenities_clean.csv', 'Amenities cleaned')
     
     rucc_2023 = pd.read_csv(PROCESSED_DATA_DIR / 'USDA_RUCC_2023.csv')
-    rucc_2023 = rucc_2023[~rucc_2023['FIPS'].str.startswith('091')].copy()
+    rucc_2023 = rucc_2023[~rucc_2023['FIPS'].astype(str).str.startswith('091')].copy()
     save_point(rucc_2023, 'USDA_RUCC_2023_clean.csv', 'RUCC 2023 cleaned')
     
     return amenities, rucc_2023
@@ -38,12 +38,12 @@ def clean_bea_data():
     pci = pd.read_csv(PROCESSED_DATA_DIR / 'BEA_PCI.csv')
     pci['FIPS'] = pci['FIPS'].replace({'15901': '15009'})
     pci = pci[pci['FIPS'] != '55901']
-    pci = pci[~pci['FIPS'].str.startswith('519')].copy()
+    pci = pci[~pci['FIPS'].astype(str).str.startswith('519')].copy()
     save_point(pci, 'BEA_PCI_clean.csv', 'PCI cleaned')
     
     gdp = pd.read_csv(PROCESSED_DATA_DIR / 'BEA_GDP.csv')
     gdp['FIPS'] = gdp['FIPS'].replace({'15901': '15009'})
-    gdp = gdp[~gdp['FIPS'].str.startswith('519')].copy()
+    gdp = gdp[~gdp['FIPS'].astype(str).str.startswith('519')].copy()
     save_point(gdp, 'BEA_GDP_clean.csv', 'GDP cleaned')
     
     return pci, gdp
@@ -116,7 +116,7 @@ def run():
     pci, gdp = clean_bea_data()
     incentives = load_incentives()
     
-    print("\n✅ Preprocessing complete\n")
+    print("\nPreprocessing complete\n")
 
 if __name__ == '__main__':
     run()

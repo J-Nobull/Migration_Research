@@ -5,20 +5,20 @@ from dotenv import load_dotenv
 from datetime import datetime
 
 # Load environment variables
-load_dotenv()
+load_dotenv(Path(__file__).parent.parent / '.env')
 
 # API Keys
-API_KEY_BEA = os.getenv('BEA_API_KEY', 'your_key_here')
-API_KEY_CENSUS = os.getenv('CENSUS_API_KEY', 'your_key_here')
-API_KEY_BLS = os.getenv('BLS_API_KEY', 'your_key_here')
+API_KEY_BEA = os.getenv('API_KEY_BEA', 'your_key_here')
+API_KEY_CENSUS = os.getenv('API_KEY_CENSUS', 'your_key_here')
+API_KEY_BLS = os.getenv('API_KEY_BLS', 'your_key_here')
 
 # Validate API keys
 if API_KEY_BEA == 'your_key_here':
-    raise ValueError("BEA_API_KEY not set")
+    raise ValueError("API_KEY_BEA not set")
 if API_KEY_CENSUS == 'your_key_here':
-    raise ValueError("CENSUS_API_KEY not set")
+    raise ValueError("API_KEY_CENSUS not set")
 if API_KEY_BLS == 'your_key_here':
-    raise ValueError("BLS_API_KEY not set")
+    raise ValueError("API_KEY_BLS not set")
 
 # Study Parameters
 YEARS = list(range(2011, 2022))

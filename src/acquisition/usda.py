@@ -74,7 +74,7 @@ def run():
     amenities = filter_dataframe(amenities, 'Natural Amenities')
     save_point(amenities, 'USDA_Amenities.csv', f"{len(amenities)} counties")
     
-    print("\n✅ USDA data loading complete\n")
+    print("\nUSDA data loading complete\n")
 
 if __name__ == '__main__':
     run()
