@@ -1,0 +1,15 @@
+pandas>=2.0.0
+numpy>=1.24.0
+requests>=2.31.0
+census>=0.8.19
+matplotlib>=3.7.0
+seaborn>=0.12.0
+scipy>=1.11.0
+statsmodels>=0.14.0
+geopandas>=0.13.0
+linearmodels>=5.3
+scikit-learn>=1.3.0
+libpysal>=4.7.0
+esda>=2.5.0
+openpyxl>=3.1.0
+python-dotenv>=1.0.0

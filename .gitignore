@@ -1,0 +1,41 @@
+# Environment variables (contains API keys)
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Data files (processed outputs not tracked)
+data/processed/*
+!data/processed/.gitkeep
+
+# Output files
+outputs/figures/*
+outputs/tables/*
+outputs/reports/*
+!outputs/figures/.gitkeep
+!outputs/tables/.gitkeep
+!outputs/reports/.gitkeep
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Large data files
+*.csv.gz
+*.parquet
