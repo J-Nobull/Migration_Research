@@ -26,12 +26,10 @@ from esda.moran import Moran
 from linearmodels.iv import IV2SLS
 from sklearn.linear_model import LinearRegression
 from statsmodels.stats.outliers_influence import variance_inflation_factor
-# from graphviz import Digraph
 from IPython.display import Image, display
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.inspection import permutation_importance
 from sklearn.preprocessing import StandardScaler
-# %matplotlib inline
 print('\nEnvironment Ready')
  
 warnings.filterwarnings('ignore')
@@ -43,10 +41,10 @@ pd.set_option('display.width', None)
 # Census:   https://api.census.gov/data/key_signup.html
 # BLS:      https://data.bls.gov/registrationEngine/
 
-# API Keys - REPLACE 'Key-Here' WITH ACTUAL KEYS
-#API_KEY_BEA     = 'Key-Here'
-#API_KEY_CENSUS  = 'Key-Here'
-#API_KEY_BLS     = 'Key-Here'
+# API Keys - REPLACE Key-Here WITH ACTUAL KEYS
+API_KEY_BEA     = 'Key-Here'
+API_KEY_CENSUS  = 'Key-Here'
+API_KEY_BLS     = 'Key-Here'
  
 # Validate API keys
 if API_KEY_BEA == 'Key-Here':
@@ -1371,9 +1369,8 @@ save_point(pd.DataFrame({
     'MODEL-4_dynamic_results.csv', 'Dynamic panel')
  
 print(" Model 4 complete\n")
-print("="*49)
-print("SECTION 9 COMPLETE")
-print("="*49 + "\n")
+print("ALL 4 MODELS COMPLETE")
+
  
 # ===========================================================
 # SECTION 10: CONSOLIDATED RESULTS & OUTPUT
@@ -1580,6 +1577,7 @@ print()
 # ===========================================================
 # 10.6: KEY FINDINGS SUMMARY
 # ===========================================================
+print("="*49)
 print("10.6: Key Findings Summary\n")
 print("="*49)
  
@@ -1629,8 +1627,9 @@ print()
 # ===========================================================
 # 10.7: OUTPUT FILES GENERATED
 # ===========================================================
+print("-" * 49)
 print("10.7: Output files generated:\n")
-print("-" * 60)
+print("-" * 49)
  
 output_files = [
     'MASTER_MODEL_COMPARISON.csv',
@@ -1726,15 +1725,15 @@ print("\n" + "="*49)
 Urban_migrate = panel.copy()
 # RUCC categories
 rucc_labels = {
-    1: 'Metro >1M',
-    2: 'Metro 250K-1M',
-    3: 'Metro <250K',
-    4: 'Suburban 20K+, Metro',
-    5: 'Suburban 20K+, Non-metro',
-    6: 'Suburban 2.5-20K, Metro',
-    7: 'Rural 2.5-20K, Non-metro',
-    8: 'Rural <2.5K, Metro',
-    9: 'Rural <2.5K, Non-metro'}
+    1: 'Large Metropolitan >1M',
+    2: 'Medium Metro 250K-1M',
+    3: 'Smaller Metro <250K',
+    4: 'Suburban 20K+, Metro Adjascent',
+    5: 'Suburban 20K+, Not Metro Adj',
+    6: 'Suburban 2.5-20K, Metro Adj',
+    7: 'Rural 2.5-20K, Not Metro Adj',
+    8: 'Rural <2.5K, Metro Adj',
+    9: 'Rural <2.5K, Not Metro Adj'}
  
 Urban_migrate['RUCC_label'] = Urban_migrate['RUC_code'].map(rucc_labels)
  
@@ -2255,7 +2254,7 @@ for var in balance_vars:
         'Variable': var,
         'Treatment': treat_mean,
         'Control': control_mean,
-        'Difference': diff,         # ← CREATE this column FIRST
+        'Difference': diff, 
         'Pct_Diff': pct_diff})
  
 # Create DataFrame
