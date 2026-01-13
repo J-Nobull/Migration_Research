@@ -13,12 +13,14 @@ This project examines the relationship between housing incentive programs and co
 ## Project Structure
 ```
 migration-research/
+├── py_docs                   # .ipynb and .py versions of this code
 ├── .env.example              # API key template
-├── data_dictionary           # Complete variable definitions and sources
 ├── .gitignore
+├── data_dictionary.md        # Complete variable definitions and sources
+├── LICENSE
+├── main.py                   # Pipeline controller
 ├── README.md
 ├── requirements.txt
-├── main.py                   # Pipeline controller
 ├── config/
 │   ├── __init__.py
 │   └── settings.py           # Configuration & API keys
@@ -120,7 +122,7 @@ python main.py --skip-tests
 - Clean Census data
 - Standardize FIPS codes
 - Handle missing values
-- Remap historical changes
+- Remap historical FIPS changes
 
 **Step 3: Feature Engineering**
 - Create percentage variables
