@@ -1,7 +1,49 @@
 """Helper functions for data cleaning and processing."""
 import pandas as pd
 import numpy as np
+import requests
+import time
+from typing import Optional, Dict, Any
 from config.settings import PROCESSED_DATA_DIR
+
+# API request with retry logic and error handling
+def api_request(
+    url: str,
+    params: Optional[Dict[str, Any]] = None,
+    method: str = 'GET',
+    json_data: Optional[Dict[str, Any]] = None,
+    max_retries: int = 3,
+    retry_delay: int = 2,
+    timeout: int = 120) -> Optional[requests.Response]:
+
+    for attempt in range(max_retries):
+        try:
+            if method.upper() == 'POST':
+                response = requests.post(url, json=json_data, timeout=timeout)
+            else:
+                response = requests.get(url, params=params, timeout=timeout)
+            response.raise_for_status()
+            return response
+            
+        except requests.exceptions.Timeout:
+            if attempt < max_retries - 1:
+                print(f"  ⚠️  Timeout (attempt {attempt + 1}/{max_retries}), retrying...")
+                time.sleep(retry_delay)
+            else:
+                print(f"  ❌ Timeout after {max_retries} attempts")
+                
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code == 429:  # Rate limit
+                print(f"  ⚠️  Rate limited, waiting {retry_delay * 2}s...")
+                time.sleep(retry_delay * 2)
+            else:
+                print(f"  ❌ HTTP {e.response.status_code}: {e}")
+                return None
+                
+        except requests.exceptions.RequestException as e:
+            print(f"  ❌ Request error: {e}")
+            return None
+    return None
 
 def standardize_fips(df, state_col=None, county_col=None, fips_col='FIPS'):
     """Standardize FIPS codes to 5-digit strings."""
@@ -15,7 +57,7 @@ def standardize_fips(df, state_col=None, county_col=None, fips_col='FIPS'):
         raise ValueError("Must provide either (state_col, county_col) or fips_col")
     return df
 
-def define_cols(df, exclude_cols=['FIPS', 'origin_FIPS', 'state', 'county', 'STATE']):
+def define_cols(df, exclude_cols=['FIPS', 'origin_FIPS', 'dest_FIPS', 'state', 'county', 'STATE']):
     """Define column types based on content."""
     df = df.copy()
     for col in df.columns:
@@ -27,12 +69,9 @@ def define_cols(df, exclude_cols=['FIPS', 'origin_FIPS', 'state', 'county', 'STA
             df[col] = pd.to_numeric(df[col], errors='coerce')
         elif df[col].dtype == 'object':
             df[col] = df[col].replace('-', np.nan)
-            try:
-                df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', ''), errors='coerce')
-                if df[col].dropna().apply(float.is_integer).all():
-                    df[col] = df[col].astype('Int64')
-            except:
-                pass
+            df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', ''), errors='coerce')
+            if (df[col].dropna() % 1 == 0).all():
+                df[col] = df[col].astype('Int64')
     return df
 
 def remap_fips_changes(df, fips_cols=['FIPS']):

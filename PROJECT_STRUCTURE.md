@@ -8,10 +8,10 @@ migration-research/
 ├── .env.example              # Rename downloaded file
 ├── .env                      # Copy from .env.example and add keys
 ├── .gitignore
+├── data_dictionary.md
 ├── LICENSE
-├── README.md
-├── QUICKSTART.md
 ├── PROJECT_STRUCTURE.md      # This file
+├── README.md
 ├── requirements.txt
 ├── main.py
 │
@@ -23,7 +23,10 @@ migration-research/
 │   ├── raw/                  # Create this folder
 │   │   ├── Incentives.csv
 │   │   ├── countyinflow1112.csv
-│   │   ├── ... (14 more IRS/USDA files)
+│   │   ├── ... (10 more IRS files)
+│   │   ├── erscountytypology2015edition.csv
+│   │   ├── Ruralurbancontinuumcodes2023.csv
+│   │   ├── ruralurbancodes2013.xls
 │   │   └── natamenf_1_.xls
 │   └── processed/            # Auto-created by pipeline
 │
@@ -46,12 +49,17 @@ migration-research/
 │   │   ├── __init__.py       # Rename: src_features__init__.py
 │   │   └── engineer_features.py  # Rename: src_features_engineer_features.py
 │   │
+│   ├── validation/
+│   │   ├── __init__.py       # Rename: src_validation__init__.py
+│   │   └── feature_selection.py  # Rename: src_validation_feature_selection.py
+│   │
 │   ├── models/
 │   │   ├── __init__.py       # Rename: src_models__init__.py
 │   │   └── run_models.py     # Rename: src_models_run_models.py
 │   │
 │   ├── analysis/
 │   │   ├── __init__.py       # Rename: src_analysis__init__.py
+│   │   ├── feature_selection # Rename: src_analysis_feature_selection.py
 │   │   └── create_outputs.py # Rename: src_analysis_create_outputs.py
 │   │
 │   └── utils/

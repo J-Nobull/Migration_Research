@@ -2,10 +2,13 @@
 import pandas as pd
 import requests
 import time
+import zipfile
+import io
 from config.settings import API_KEY_CENSUS, YEARS
-from src.utils.helpers import standardize_fips, define_cols
+from src.utils.helpers import (api_request, standardize_fips,  
+                               define_cols, save_point)
 
-# ACS 5-year estimates variable list (67 variables)
+# ACS 5-year estimates variable list (64 variables)
 ACS_VARS = {
     'B01003_001E': 'total_population',
     'B01002_001E': 'median_age',
@@ -84,23 +87,24 @@ def fetch_census_batch(year, var_codes):
         'for': 'county:*',
         'key': API_KEY_CENSUS}
     
-    r = requests.get(url, params=params, timeout=120)
-    if r.status_code != 200:
-        print(f"  ⚠ HTTP {r.status_code} for {year}")
-        return pd.DataFrame()
+    response = api_request(url, params=params)
     
+    if response is None:
+        return pd.DataFrame()
     try:
-        data = r.json()
+        data = response.json()
     except ValueError:
-        print(f"  ⚠ JSON decode error for {year}")
+        print(f"  ⚠️  JSON decode error for {year}")
         return pd.DataFrame()
     
+    # Check for API errors
     if isinstance(data, dict) and 'error' in data:
-        print(f"  ⚠ API error for {year}: {data['error']}")
+        print(f"  ⚠️  API error for {year}: {data['error']}")
         return pd.DataFrame()
     
+    # Check for empty response
     if not data or len(data) <= 1:
-        print(f"  ⚠ No rows for {year}")
+        print(f"  ⚠️  No rows returned for {year}")
         return pd.DataFrame()
     
     return pd.DataFrame(data[1:], columns=data[0])
@@ -119,21 +123,24 @@ def run():
         print(f"Fetching ACS {year}...")
         parts = []
         
-        for b in batches:
-            dfb = fetch_census_batch(year, ['NAME'] + b)
-            if dfb.empty:
+        for batch in batches:
+            batch_df = fetch_census_batch(year, ['NAME'] + batch)
+            if batch_df.empty:
                 parts = []
                 break
-            parts.append(dfb)
-            time.sleep(0.25)
+            parts.append(batch_df)
+            time.sleep(0.25) 
         
         if not parts:
+            print(f"  ⚠️  Skipping year {year} due to errors")
             continue
         
+        # Merge batches for this year
         year_df = parts[0]
         for part in parts[1:]:
             year_df = year_df.merge(part, on=['NAME', 'state', 'county'], how='outer')
         
+        # Rename columns and process
         year_df = year_df.rename(columns=ACS_VARS)
         year_df = standardize_fips(year_df, state_col='state', county_col='county', fips_col='FIPS')
         year_df['Year'] = int(year)
@@ -141,23 +148,64 @@ def run():
         year_df = define_cols(year_df)
         
         frames.append(year_df)
-        print(f"  ✓ Saved {len(year_df):,} rows")
+        print(f"  Saved {len(year_df):,} rows")
     
     if not frames:
         print("\n❌ No Census data downloaded")
         return
     
+    # Combine all years
     out = pd.concat(frames, ignore_index=True)
     keep_cols = ['FIPS', 'Year'] + [c for c in ACS_VARS.values() if c in out.columns]
     out = out[keep_cols].copy()
     
-    from src.utils.helpers import save_point
     save_point(out, 'Census_import.csv', f"{len(out):,} county-year observations")
     
     print(f"\nCensus download complete")
-    print(f"Counties: {out['FIPS'].nunique()}")
+    print(f"Counties: {out['FIPS'].nunique():,}")
     print(f"Years: {out['Year'].min()}-{out['Year'].max()}")
     print(f"Variables: {len([c for c in ACS_VARS.values() if c in out.columns])}\n")
 
+    download_centroids()
+
+def download_centroids():
+    """Download county centroids (lat/lon) for use in model-1 gravity flow ."""
+    print("\n" + "-"*49)
+    print("Downloading county centroids (lat/lon)")
+    print("-"*49)
+    
+    gaz_url = "https://www2.census.gov/geo/docs/maps-data/data/gazetteer/2021_Gazetteer/2021_Gaz_counties_national.zip"
+    
+    print(f"\nDownloading: {gaz_url}")
+    response = api_request(gaz_url)
+    
+    if response is None:
+        print("❌ Failed to download centroids")
+        return
+    
+    print("Downloaded, extracting...")
+    
+    with zipfile.ZipFile(io.BytesIO(response.content)) as z:
+        with z.open('2021_Gaz_counties_national.txt') as f:
+            centroids = pd.read_csv(f, sep='\t', encoding='latin1')
+    
+    # Strip whitespace from column names
+    centroids.columns = centroids.columns.str.strip()
+    
+    # Extract FIPS, lat, lon
+    centroids['FIPS'] = centroids['GEOID'].astype(str).str.zfill(5)
+    centroids = centroids[['FIPS', 'INTPTLAT', 'INTPTLONG']].rename(
+        columns={'INTPTLAT': 'lat', 'INTPTLONG': 'lon'})
+    
+    # Drop Puerto Rico 
+    centroids = centroids[~centroids['FIPS'].str.startswith('72')]
+    
+    # Alaska: keep only Anchorage (02020), the most populous location
+    centroids = centroids[~((centroids['FIPS'].str.startswith('02')) & (centroids['FIPS'] != '02020'))]
+    # Rename to 02001 to match AK consolidation
+    centroids.loc[centroids['FIPS'] == '02020', 'FIPS'] = '02001'
+    centroids = centroids.sort_values('FIPS').reset_index(drop=True)
+    save_point(centroids, 'County_centroids.csv', f"{len(centroids):,} county centroids")
+    
 if __name__ == '__main__':
     run()

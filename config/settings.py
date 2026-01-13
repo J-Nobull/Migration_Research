@@ -38,18 +38,24 @@ PROCESSED_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 # Required manual download files
 REQUIRED_FILES = [
-    'Incentives.csv',
-    'countyinflow1112.csv', 'countyinflow1213.csv', 'countyinflow1314.csv',
-    'countyinflow1415.csv', 'countyinflow1516.csv', 'countyinflow1617.csv',
-    'countyinflow1718.csv', 'countyinflow1819.csv', 'countyinflow1920.csv',
-    'countyinflow2021.csv', 'countyinflow2122.csv',
-    'ruralurbancodes2013.xls',
-    'Ruralurbancontinuumcodes2023.csv',
-    'erscountytypology2015edition.csv',
-    'natamenf_1_.xls']
+    'Incentives.csv', 'countyinflow1112.csv', 'countyinflow1213.csv', 
+    'countyinflow1314.csv', 'countyinflow1415.csv', 'countyinflow1516.csv', 
+    'countyinflow1617.csv', 'countyinflow1718.csv', 'countyinflow1819.csv', 
+    'countyinflow1920.csv', 'countyinflow2021.csv', 'countyinflow2122.csv',
+    'ruralurbancodes2013.xls', 'Ruralurbancontinuumcodes2023.csv',
+    'erscountytypology2015edition.csv', 'natamenf_1_.xls']
 
 # IRS files
 IRS_FILES = [f for f in REQUIRED_FILES if f.startswith('countyinflow')]
+
+FEATURE_SELECTION = {
+    'stepwise_threshold_in': 0.05,
+    'stepwise_threshold_out': 0.10,
+    'vif_cutoff': 10,
+    'lasso_cv_folds': 5,
+    'min_sample_size': 100,
+    'min_variation': 0.0001,
+    'random_seed': 42} # For reproducibility
 
 print(f"\n{'='*49}")
 print("CONFIGURATION LOADED")

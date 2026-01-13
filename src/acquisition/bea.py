@@ -3,11 +3,11 @@ import pandas as pd
 import requests
 from io import BytesIO
 from config.settings import API_KEY_BEA, YEARS
-from src.utils.helpers import standardize_fips, define_cols, remap_fips_changes, filter_dataframe, save_point
+from src.utils.helpers import (api_request, standardize_fips, define_cols, 
+                               remap_fips_changes, filter_dataframe, save_point)
 
 def get_bea_data(dataset, table, line_code, geo_type, years):
-    """Fetch BEA data via API."""
-    base_url = "https://apps.bea.gov/api/data"
+    url = "https://apps.bea.gov/api/data"
     results = []
     
     for year in years:
@@ -21,19 +21,21 @@ def get_bea_data(dataset, table, line_code, geo_type, years):
             'Year': year,
             'ResultFormat': 'JSON'}
         
-        response = requests.get(base_url, params=params)
-        if response.status_code == 200:
+        response = api_request(url, params=params)
+        if response is None:
+            print(f"  ⚠️  Failed to fetch {table} year {year}")
+            continue
+        try:
             data = response.json()
             if 'BEAAPI' in data and 'Results' in data['BEAAPI']:
                 if 'Data' in data['BEAAPI']['Results']:
                     results.extend(data['BEAAPI']['Results']['Data'])
                 else:
-                    print(f"  ⚠ No data for {table} year {year}")
+                    print(f"  ⚠️  No data for {table} year {year}")
             else:
-                print(f"  ⚠ Invalid response for {table} year {year}")
-        else:
-            print(f"  ⚠ HTTP {response.status_code} for {table} year {year}")
-    
+                print(f"  ⚠️  Invalid response structure for {table} year {year}")
+        except ValueError:
+            print(f"  ⚠️  JSON decode error for {table} year {year}")
     return pd.DataFrame(results) if results else pd.DataFrame()
 
 def run():
@@ -96,20 +98,25 @@ def run():
     # Download CBSA crosswalk for metro RPP
     print("\nDownloading CBSA delineation crosswalk...")
     cbsa_url = 'https://www2.census.gov/programs-surveys/metro-micro/geographies/reference-files/2013/delineation-files/list1.xls'
-    response = requests.get(cbsa_url)
-    cbsa = pd.read_excel(BytesIO(response.content), skiprows=2)
-    
-    cbsa['FIPS State Code'] = pd.to_numeric(cbsa['FIPS State Code'], errors='coerce').astype('Int64')
-    cbsa['FIPS County Code'] = pd.to_numeric(cbsa['FIPS County Code'], errors='coerce').astype('Int64')
-    cbsa = standardize_fips(cbsa, state_col='FIPS State Code', county_col='FIPS County Code', fips_col='FIPS')
-    cbsa.rename(columns={'CBSA Code': 'MSA_Code'}, inplace=True)
-    
-    if not rpp_metro.empty:
-        rpp_metro['MSA_Code'] = rpp_metro['MSA_Code'].astype(str).str.zfill(5)
-        cbsa['MSA_Code'] = cbsa['MSA_Code'].astype(str).str.zfill(5)
-        rpp_metro = rpp_metro.merge(cbsa[['MSA_Code', 'FIPS']], on='MSA_Code', how='left')
-        rpp_metro = rpp_metro[['FIPS', 'Year', 'RPP_Metro']].dropna(subset=['FIPS'])
-        save_point(rpp_metro, 'BEA_RPP_Metro.csv', f"{len(rpp_metro):,} county-year RPP records")
+    response = api_request(cbsa_url)
+    if response is None:
+        print("  ❌ Failed to download CBSA crosswalk")
+        return
+    try:
+        cbsa = pd.read_excel(BytesIO(response.content), skiprows=2)
+        cbsa['FIPS State Code'] = pd.to_numeric(cbsa['FIPS State Code'], errors='coerce').astype('Int64')
+        cbsa['FIPS County Code'] = pd.to_numeric(cbsa['FIPS County Code'], errors='coerce').astype('Int64')
+        cbsa = standardize_fips(cbsa, state_col='FIPS State Code', county_col='FIPS County Code', fips_col='FIPS')
+        cbsa.rename(columns={'CBSA Code': 'MSA_Code'}, inplace=True)
+        
+        if not rpp_metro.empty:
+            rpp_metro['MSA_Code'] = rpp_metro['MSA_Code'].astype(str).str.zfill(5)
+            cbsa['MSA_Code'] = cbsa['MSA_Code'].astype(str).str.zfill(5)
+            rpp_metro = rpp_metro.merge(cbsa[['MSA_Code', 'FIPS']], on='MSA_Code', how='left')
+            rpp_metro = rpp_metro[['FIPS', 'Year', 'RPP_Metro']].dropna(subset=['FIPS'])
+            save_point(rpp_metro, 'BEA_RPP_Metro.csv', f"{len(rpp_metro):,} county-year RPP records")
+    except Exception as e:
+        print(f"  ⚠️  Error processing CBSA crosswalk: {e}")
     
     print("\nBEA data acquisition complete\n")
 

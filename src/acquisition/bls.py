@@ -1,9 +1,9 @@
 """Bureau of Labor Statistics (BLS) - Local Area Unemployment data acquisition."""
 import pandas as pd
-import requests
 import time
-from config.settings import API_KEY_BLS, YEARS
-from src.utils.helpers import standardize_fips, define_cols, remap_fips_changes, save_point
+from config.settings import API_KEY_BLS, YEARS, PROCESSED_DATA_DIR
+from src.utils.helpers import (api_request, standardize_fips, define_cols, 
+                               remap_fips_changes, save_point)
 
 def get_bls_unemployment(fips_list, years, batch_size=50, sleep_s=1.0):
     """Fetch county-level annual unemployment rates from BLS API."""
@@ -25,17 +25,21 @@ def get_bls_unemployment(fips_list, years, batch_size=50, sleep_s=1.0):
             'registrationkey': API_KEY_BLS,
             'annualaverage': True}
         
-        response = requests.post(url, json=payload, timeout=120)
+        response = api_request(url, method='POST', json_data=payload)
         
-        if response.status_code != 200:
-            print(f"  ⚠ HTTP {response.status_code} in batch {batch_num}/{total_batches}")
+        if response is None:
+            print(f"  ⚠️  Failed to fetch batch {batch_num}/{total_batches}")
+            continue
+        try:
+            data = response.json()
+        except ValueError:
+            print(f"  ⚠️  JSON decode error in batch {batch_num}/{total_batches}")
             continue
         
-        data = response.json()
-        
         if data.get('status') != 'REQUEST_SUCCEEDED':
-            msg = data.get('message', 'Unknown error')
-            print(f"  ⚠ Batch {batch_num}/{total_batches} error: {msg}")
+            msg = data.get('message', ['Unknown error'])
+            error_msg = msg[0] if isinstance(msg, list) else msg
+            print(f"  ⚠️  Batch {batch_num}/{total_batches} error: {error_msg}")
             continue
         
         for series in data.get('Results', {}).get('series', []):
@@ -51,7 +55,7 @@ def get_bls_unemployment(fips_list, years, batch_size=50, sleep_s=1.0):
                         'Year': int(item['year']),
                         'unemploy_rate': pd.to_numeric(item.get('value'), errors='coerce')})
         
-        print(f"  ✓ Batch {batch_num}/{total_batches}")
+        print(f"  Batch {batch_num}/{total_batches}")
         time.sleep(sleep_s)
     
     return pd.DataFrame(rows)
@@ -62,33 +66,32 @@ def run():
     print("BLS LAUS DATA ACQUISITION")
     print("="*49 + "\n")
     
-    # Get FIPS list from Census data if available
-    from config.settings import PROCESSED_DATA_DIR
+    # Get FIPS list from Census data
     census_file = PROCESSED_DATA_DIR / 'Census_import.csv'
     
-    if census_file.exists():
-        print("Loading FIPS list from Census data...")
-        census_df = pd.read_csv(census_file)
-        fips_list = census_df['FIPS'].dropna().unique()
-    else:
-        print("⚠ Census data not found. Run Census acquisition first.")
+    if not census_file.exists():
+        print("❌ Census data not found")
+        print("   Run Census acquisition first (Step 1)\n")
         return
     
-    print(f"Fetching unemployment data for {len(fips_list)} counties...\n")
+    print("Loading FIPS list from Census data...")
+    census_df = pd.read_csv(census_file)
+    fips_list = census_df['FIPS'].dropna().unique()
     
+    print(f"Fetching unemployment data for {len(fips_list):,} counties...\n")
     bls_df = get_bls_unemployment(fips_list, YEARS)
     
     if bls_df.empty:
         print("\n❌ No BLS data downloaded")
         return
     
+    # Clean and standardize
     bls_df = standardize_fips(bls_df)
     bls_df = define_cols(bls_df)
     bls_df = remap_fips_changes(bls_df, fips_cols=['FIPS'])
     
     save_point(bls_df, 'BLS_import.csv', f"{len(bls_df):,} annual unemployment observations")
-    
-    print(f"\n BLS data acquisition complete")
+    print(f"\nBLS data acquisition complete")
     print(f"Unique FIPS: {bls_df['FIPS'].nunique():,}\n")
 
 if __name__ == '__main__':
