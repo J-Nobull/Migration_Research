@@ -100,8 +100,9 @@ python main.py
 python main.py --step 1    # Data acquisition
 python main.py --step 2    # Preprocessing
 python main.py --step 3    # Feature engineering
-python main.py --step 4    # Statistical modeling
-python main.py --step 5    # Analysis & visualization
+python main.py --step 4    # Feature selection
+python main.py --step 5    # Statistical modeling
+python main.py --step 6    # Analysis & visualization
 ```
 
 ### Skip Validation Tests
@@ -131,7 +132,7 @@ python main.py --skip-tests
 - Compute derived features
 - Merge datasets into panel
 
-**Step 4: Feature selection**
+**Step 4: Feature Selection**
 - VIF analysis (detect multicollinearity)
 - Stepwise regression (forward/backward selection)
 - LASSO regularization (L1 penalty)
@@ -183,4 +184,4 @@ A Multilevel Analysis of Sustained Migration Between Counties Across the United 
 
 ## Contact
 For questions, open an issue on GitHub
-Or email jason.leo.noble@gmail.com
+Or email: jason.leo.noble@gmail.com
