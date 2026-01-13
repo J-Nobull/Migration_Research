@@ -23,7 +23,7 @@ migration-research/
 ├── requirements.txt
 ├── config/
 │   ├── __init__.py
-│   └── settings.py           # Configuration & API keys
+│   └── settings.py           # Configuration 
 ├── data/
 │   ├── raw/                  # 16 downloaded files 
 │   └── processed/            # Generated files (gitignored)
@@ -31,6 +31,7 @@ migration-research/
 │   ├── acquisition/          # API data collection
 │   ├── preprocessing/        # Data cleaning
 │   ├── features/             # Feature engineering
+│   ├── validation/           # Feature selection
 │   ├── models/               # Statistical models
 │   ├── analysis/             # Results & visualizations
 │   └── utils/                # Helper functions
@@ -113,6 +114,7 @@ python main.py --skip-tests
 **Step 1: Data Acquisition**
 - Fetch BEA (PCI, GDP, RPP)
 - Fetch Census (demographics, housing)
+- Download county centroids (lat/lon for distance calculation)
 - Fetch BLS (unemployment)
 - Load IRS migration files
 - Load USDA classifications
@@ -129,13 +131,20 @@ python main.py --skip-tests
 - Compute derived features
 - Merge datasets into panel
 
-**Step 4: Statistical Modeling**
+**Step 4: Feature selection**
+- VIF analysis (detect multicollinearity)
+- Stepwise regression (forward/backward selection)
+- LASSO regularization (L1 penalty)
+- Time-varying feature validation (for FE models)
+- Output: 6-7 validated features for panel models
+
+**Step 5: Statistical Modeling**
 - Gravity model
 - Panel fixed effects
 - Difference-in-differences
 - Dynamic panel models
 
-**Step 5: Analysis & Visualization**
+**Step 6: Analysis & Visualization**
 - Generate figures
 - Create results tables
 - Produce diagnostic reports
@@ -148,6 +157,14 @@ python main.py --skip-tests
 - `data/processed/Census_import.csv` - Demographics
 - `data/processed/IRS_gravity.csv` - Migration flows
 - `data/processed/IRS_panel.csv` - For integration with other import files
+
+**Feature Selection:**
+- `outputs/tables/vif_analysis.csv` - Variance inflation factors
+- `outputs/tables/feature_selection_comparison.csv` - Method comparison
+- `outputs/tables/selected_features.csv` - Final validated features
+- `outputs/tables/lasso_coefficients.csv` - LASSO feature importance
+- `outputs/tables/time_varying_validation.csv` - FE model validation
+- `outputs/tables/stepwise_summary.txt` - Stepwise regression results
 
 **Results:**
 - `outputs/tables/MODEL-*.csv` - Regression results
