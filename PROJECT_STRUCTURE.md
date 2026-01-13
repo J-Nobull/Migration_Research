@@ -80,7 +80,7 @@ migration-research/
 
 **1. Create directory structure:**
 ```bash
-mkdir -p migration-research/{config,data/{raw,processed},src/{acquisition,preprocessing,features,models,analysis,utils},tests,outputs/{figures,tables,reports}}
+mkdir -p migration-research/{config,data/{raw,processed},src/{acquisition,analysis,features,models,preprocessing,utils,validation},tests,outputs/{figures,tables,reports}}
 ```
 
 **2. Move and rename files:**
