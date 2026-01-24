@@ -90,12 +90,12 @@ Sources:
 
 ## Usage
 
-### Full Pipeline
+### Run Full Pipeline
 ```bash
 python main.py
 ```
 
-### Step-by-Step Execution
+### Run Step-by-Step Execution
 ```bash
 python main.py --step 1    # Data acquisition
 python main.py --step 2    # Preprocessing
@@ -105,7 +105,7 @@ python main.py --step 5    # Statistical modeling
 python main.py --step 6    # Analysis & visualization
 ```
 
-### Skip Validation Tests
+### Skip Validation Tests on Full Run
 ```bash
 python main.py --skip-tests
 ```
@@ -122,13 +122,13 @@ python main.py --skip-tests
 - Load Incentives
 
 **Step 2: Preprocessing**
-- Clean Census data
+- Clean data
 - Standardize FIPS codes
 - Handle missing values
 - Remap historical FIPS changes
 
 **Step 3: Feature Engineering**
-- Create percentage variables
+- Create percentage variables within Census
 - Compute derived features
 - Merge datasets into panel
 
