@@ -1,7 +1,7 @@
 # Migration Analysis Project Pipeline
 
 Modular pipeline for analyzing U.S. county-level migration patterns and housing incentive programs (2011-2021).  
-(Primarily built to test functionality prior to release of more relevent data from post-COVID years: 2022+)
+(Built to test functionality before expanding with additional incentive programs and post-COVID migration data)
 
 ## Overview
 This project examines the relationship between housing incentive programs and county-level migration using data from federal sources including IRS, Census Bureau, BEA, BLS, and USDA.
@@ -76,7 +76,7 @@ cp .env.example .env
 
 5. **Ensure you have the required downloaded files**
 
-Ensure these 16 files are in `data/raw/`:
+Ensure these 16 files are in your local `data/raw/`:
 - `Incentives.csv`
 - `countyinflow1112.csv` through `countyinflow2122.csv` (11 IRS files)
 - `ruralurbancodes2013.xls` (USDA)
